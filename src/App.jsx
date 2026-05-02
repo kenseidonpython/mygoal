@@ -29,7 +29,9 @@ import {
   Droplets,
   Pill,
   CheckCircle2,
-  Languages
+  Languages,
+  Save,
+  Check
 } from 'lucide-react';
 
 const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -86,7 +88,7 @@ const DEFAULT_INITIAL_STATE = [
 const App = () => {
   const [historial, setHistorial] = useState(() => {
     try {
-      const saved = localStorage.getItem('tracker_data_v3');
+      const saved = localStorage.getItem('tracker_data_v4');
       return saved ? JSON.parse(saved) : DEFAULT_INITIAL_STATE;
     } catch (e) {
       return DEFAULT_INITIAL_STATE;
@@ -95,11 +97,19 @@ const App = () => {
 
   const [currentDayIndex, setCurrentDayIndex] = useState(historial.length - 1);
   const [activeTab, setActiveTab] = useState(1);
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const data = historial[currentDayIndex] || historial[0];
 
+  // Auto-save whenever history changes
   useEffect(() => {
-    localStorage.setItem('tracker_data_v3', JSON.stringify(historial));
+    localStorage.setItem('tracker_data_v4', JSON.stringify(historial));
   }, [historial]);
+
+  const manualSave = () => {
+    localStorage.setItem('tracker_data_v4', JSON.stringify(historial));
+    setShowSaveSuccess(true);
+    setTimeout(() => setShowSaveSuccess(false), 2000);
+  };
 
   const sumaTotalAnkiHoras = historial.reduce((acc, dia) => acc + (dia.ankiHoras || 0), 0);
   const sumaTotalAnkiFrases = historial.reduce((acc, dia) => acc + (dia.ankiFrases || 0), 0);
@@ -204,7 +214,7 @@ const App = () => {
     if (window.confirm("¿Restaurar valores iniciales?")) {
       setHistorial(DEFAULT_INITIAL_STATE);
       setCurrentDayIndex(DEFAULT_INITIAL_STATE.length - 1);
-      localStorage.removeItem('tracker_data_v3');
+      localStorage.removeItem('tracker_data_v4');
     }
   };
 
@@ -427,6 +437,31 @@ const App = () => {
               </div>
             </div>
             {renderLineChart()}
+
+            {/* BOTÓN DE GUARDAR */}
+            <div className="mt-auto w-full pt-4">
+              <button 
+                onClick={manualSave}
+                className={`w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest transition-all duration-300 ${
+                  showSaveSuccess 
+                    ? 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]' 
+                    : 'bg-white/5 hover:bg-white/10 text-emerald-400 border border-emerald-500/30'
+                }`}
+              >
+                {showSaveSuccess ? (
+                  <>
+                    <Check size={20} strokeWidth={4} className="animate-bounce" />
+                    ¡Guardado!
+                  </>
+                ) : (
+                  <>
+                    <Save size={20} />
+                    Guardar Progreso
+                  </>
+                )}
+              </button>
+              <p className="text-[8px] text-slate-500 text-center mt-2 uppercase font-bold tracking-tighter opacity-50">Tus datos se guardan en la memoria local</p>
+            </div>
           </div>
         </div>
       </div>
