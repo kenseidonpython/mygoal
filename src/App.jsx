@@ -467,9 +467,29 @@ const App = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center mb-1">
                     <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Menú del día</p>
-                    <button onClick={() => setShowMealForm(!showMealForm)} className="text-[9px] font-bold text-emerald-400 uppercase bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20 flex items-center gap-1">
-                      {showMealForm ? 'Cancelar' : <><Plus size={10} /> Añadir</>}
-                    </button>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => {
+                          setNewMeal({ tipo: 'Desayuno', menu: 'Café con leche', cal: 120, icon: 'coffee', hora: '08:30' });
+                          setShowMealForm(true);
+                        }}
+                        className="text-[8px] font-bold text-orange-400 uppercase bg-orange-500/10 px-2 py-1 rounded-lg border border-orange-500/20 flex items-center gap-1"
+                      >
+                        <Coffee size={10} /> +Café
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setNewMeal({ tipo: 'Cena', menu: 'Leche con avena', cal: 320, icon: 'moon', hora: '21:00' });
+                          setShowMealForm(true);
+                        }}
+                        className="text-[8px] font-bold text-indigo-400 uppercase bg-indigo-500/10 px-2 py-1 rounded-lg border border-indigo-500/20 flex items-center gap-1"
+                      >
+                        <Moon size={10} /> +Avena
+                      </button>
+                      <button onClick={() => setShowMealForm(!showMealForm)} className="text-[9px] font-bold text-emerald-400 uppercase bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20 flex items-center gap-1">
+                        {showMealForm ? 'Cancelar' : <><Plus size={10} /> Añadir</>}
+                      </button>
+                    </div>
                   </div>
 
                   {showMealForm && (
