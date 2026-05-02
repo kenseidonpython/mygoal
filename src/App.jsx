@@ -309,7 +309,7 @@ const App = () => {
       <div className={`
         flex w-full transition-transform duration-500 ease-out h-full max-w-7xl
         xl:flex-row xl:translate-x-0 xl:gap-8 xl:items-stretch xl:justify-center
-        ${activeTab === 0 ? 'translate-x-0' : activeTab === 1 ? '-translate-x-full' : '-translate-x-[-200%]'}
+        ${activeTab === 0 ? 'translate-x-0' : activeTab === 1 ? '-translate-x-full' : '-translate-x-[200%]'}
         xl:transform-none
       `}>
         
