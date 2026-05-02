@@ -265,11 +265,22 @@ const App = () => {
     });
   };
 
-  const restoreDefaults = () => {
-    if (window.confirm("¿Restaurar valores iniciales?")) {
-      setHistorial(DEFAULT_INITIAL_STATE);
-      setCurrentDayIndex(DEFAULT_INITIAL_STATE.length - 1);
-      localStorage.removeItem('tracker_data_v4');
+  const deleteCurrentDay = () => {
+    if (historial.length <= 1) {
+      if (window.confirm("Este es el único día en el historial. ¿Quieres resetear la app por completo?")) {
+        setHistorial(DEFAULT_INITIAL_STATE);
+        setCurrentDayIndex(0);
+        localStorage.removeItem('tracker_data_v4');
+      }
+      return;
+    }
+
+    if (window.confirm(`¿Seguro que quieres borrar el registro del ${data.fecha.split(',')[0]}?`)) {
+      setHistorial(prev => {
+        const newHistorial = prev.filter((_, i) => i !== currentDayIndex);
+        setCurrentDayIndex(Math.max(0, currentDayIndex - 1));
+        return newHistorial;
+      });
     }
   };
 
@@ -417,8 +428,8 @@ const App = () => {
                   </div>
                 </div>
                 <div className="flex gap-2 ml-3">
-                  <button onClick={restoreDefaults} className="p-2.5 bg-white/5 text-rose-400 rounded-xl"><Trash2 size={18} /></button>
-                  <button onClick={addNewDay} className="p-2.5 bg-emerald-500 text-white rounded-xl"><PlusCircle size={18} /></button>
+                  <button onClick={deleteCurrentDay} className="p-2.5 bg-white/5 text-rose-400 rounded-xl hover:bg-rose-500/10 transition-colors" title="Borrar este día"><Trash2 size={18} /></button>
+                  <button onClick={addNewDay} className="p-2.5 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-all active:scale-95 shadow-lg shadow-emerald-500/20"><PlusCircle size={18} /></button>
                 </div>
               </div>
 
