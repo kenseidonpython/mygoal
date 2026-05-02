@@ -31,8 +31,11 @@ import {
   CheckCircle2,
   Languages,
   Save,
-  Check
+  Check,
+  Copy,
+  ExternalLink
 } from 'lucide-react';
+
 
 const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
@@ -82,6 +85,25 @@ const DEFAULT_INITIAL_STATE = [
     vasosAgua: 0,
     tomadaTiroides: false,
     preplyHoras: 0
+  },
+  {
+    fecha: "03 de Mayo, 2026",
+    pesoActual: 143,
+    pesoMeta: 86,
+    unidad: "kg",
+    ankiHoras: 0,
+    ankiFrases: 0,
+    tiempoOcio: 0,
+    appHoras: 0,
+    comidas: [
+      { tipo: "Desayuno", menu: "Café con leche", hora: "08:30", cal: 120, icon: "coffee" },
+      { tipo: "Almuerzo", menu: "100 gramos de paella", hora: "14:00", cal: 200, icon: "sun" },
+      { tipo: "Merienda", menu: "Arroz blanco con embutido", hora: "17:30", cal: 400, icon: "cloudSun" },
+      { tipo: "Cena", menu: "Yogurt con gofio", hora: "21:00", cal: 250, icon: "moon" }
+    ],
+    vasosAgua: 0,
+    tomadaTiroides: false,
+    preplyHoras: 0
   }
 ];
 
@@ -98,6 +120,8 @@ const App = () => {
   const [currentDayIndex, setCurrentDayIndex] = useState(historial.length - 1);
   const [activeTab, setActiveTab] = useState(1);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+  const [showMealForm, setShowMealForm] = useState(false);
+  const [newMeal, setNewMeal] = useState({ tipo: 'Comida', menu: '', cal: 0, icon: 'sun', hora: '12:00' });
   const data = historial[currentDayIndex] || historial[0];
 
   // Auto-save whenever history changes
@@ -193,6 +217,37 @@ const App = () => {
     });
   };
 
+  const addComida = () => {
+    if (!newMeal.menu) return;
+    setHistorial(prev => {
+      const newHistorial = [...prev];
+      if (newHistorial[currentDayIndex]) {
+        newHistorial[currentDayIndex] = {
+          ...newHistorial[currentDayIndex],
+          comidas: [...(newHistorial[currentDayIndex].comidas || []), { ...newMeal, cal: Number(newMeal.cal) }]
+        };
+      }
+      return newHistorial;
+    });
+    setNewMeal({ tipo: 'Comida', menu: '', cal: 0, icon: 'sun', hora: '12:00' });
+    setShowMealForm(false);
+  };
+
+  const deleteComida = (index) => {
+    setHistorial(prev => {
+      const newHistorial = [...prev];
+      if (newHistorial[currentDayIndex]) {
+        const newComidas = [...(newHistorial[currentDayIndex].comidas || [])];
+        newComidas.splice(index, 1);
+        newHistorial[currentDayIndex] = {
+          ...newHistorial[currentDayIndex],
+          comidas: newComidas
+        };
+      }
+      return newHistorial;
+    });
+  };
+
   const resetProductivity = () => {
     setHistorial(prev => {
       const newHistorial = [...prev];
@@ -216,6 +271,12 @@ const App = () => {
       setCurrentDayIndex(DEFAULT_INITIAL_STATE.length - 1);
       localStorage.removeItem('tracker_data_v4');
     }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    setShowCopied(true);
+    setTimeout(() => setShowCopied(false), 2000);
   };
 
   const addNewDay = () => {
@@ -290,9 +351,9 @@ const App = () => {
     <div className="min-h-screen bg-[#1e1f22] flex flex-col items-center justify-center p-3 sm:p-6 font-sans selection:bg-emerald-500/30 text-slate-200 overflow-hidden">
       
       <div className={`
-        flex w-full transition-transform duration-500 ease-out h-full max-w-7xl
-        xl:flex-row xl:translate-x-0 xl:gap-8 xl:items-stretch xl:justify-center
-        ${activeTab === 0 ? 'translate-x-0' : activeTab === 1 ? '-translate-x-full' : '-translate-x-[200%]'}
+        flex w-full transition-transform duration-500 ease-out h-full max-w-[1600px]
+        xl:flex-row xl:translate-x-0 xl:gap-6 xl:items-stretch xl:justify-center
+        ${activeTab === 0 ? 'translate-x-0' : activeTab === 1 ? '-translate-x-full' : activeTab === 2 ? '-translate-x-[200%]' : '-translate-x-[300%]'}
         xl:transform-none
       `}>
         
@@ -404,11 +465,81 @@ const App = () => {
                 </div>
 
                 <div className="space-y-2">
+                  <div className="flex justify-between items-center mb-1">
+                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Menú del día</p>
+                    <button onClick={() => setShowMealForm(!showMealForm)} className="text-[9px] font-bold text-emerald-400 uppercase bg-emerald-500/10 px-2 py-1 rounded-lg border border-emerald-500/20 flex items-center gap-1">
+                      {showMealForm ? 'Cancelar' : <><Plus size={10} /> Añadir</>}
+                    </button>
+                  </div>
+
+                  {showMealForm && (
+                    <div className="bg-black/40 p-4 rounded-2xl border border-emerald-500/30 space-y-3 mb-4 animate-in fade-in slide-in-from-top-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <select 
+                          value={newMeal.tipo} 
+                          onChange={(e) => setNewMeal({...newMeal, tipo: e.target.value})}
+                          className="bg-white/5 border border-white/10 rounded-lg p-2 text-xs text-white"
+                        >
+                          <option value="Desayuno">Desayuno</option>
+                          <option value="Almuerzo">Almuerzo</option>
+                          <option value="Merienda">Merienda</option>
+                          <option value="Cena">Cena</option>
+                          <option value="Comida">Comida</option>
+                        </select>
+                        <select 
+                          value={newMeal.icon} 
+                          onChange={(e) => setNewMeal({...newMeal, icon: e.target.value})}
+                          className="bg-white/5 border border-white/10 rounded-lg p-2 text-xs text-white"
+                        >
+                          <option value="coffee">Icono: Café</option>
+                          <option value="sun">Icono: Sol</option>
+                          <option value="cloudSun">Icono: Tarde</option>
+                          <option value="moon">Icono: Luna</option>
+                        </select>
+                      </div>
+                      <input 
+                        type="text" 
+                        placeholder="Nombre del plato..." 
+                        value={newMeal.menu}
+                        onChange={(e) => setNewMeal({...newMeal, menu: e.target.value})}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-xs text-white"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input 
+                          type="number" 
+                          placeholder="Calorías" 
+                          value={newMeal.cal || ''}
+                          onChange={(e) => setNewMeal({...newMeal, cal: e.target.value})}
+                          className="bg-white/5 border border-white/10 rounded-lg p-2 text-xs text-white"
+                        />
+                        <input 
+                          type="time" 
+                          value={newMeal.hora}
+                          onChange={(e) => setNewMeal({...newMeal, hora: e.target.value})}
+                          className="bg-white/5 border border-white/10 rounded-lg p-2 text-xs text-white"
+                        />
+                      </div>
+                      <button onClick={addComida} className="w-full py-2 bg-emerald-500 text-white rounded-lg text-xs font-black uppercase tracking-widest">Guardar Comida</button>
+                    </div>
+                  )}
+
+                  {(data?.comidas || []).length === 0 && !showMealForm && (
+                    <div className="text-center py-8 opacity-30">
+                      <Utensils className="mx-auto mb-2" size={24} />
+                      <p className="text-[10px] font-bold uppercase">No hay comidas registradas</p>
+                    </div>
+                  )}
+
                   {(data?.comidas || []).map((item, index) => (
-                    <div key={index} className="flex items-center gap-3 bg-white/5 p-3 rounded-xl">
+                    <div key={index} className="group relative flex items-center gap-3 bg-white/5 p-3 rounded-xl hover:bg-white/10 transition-colors">
                       <div className="w-8 h-8 rounded-lg bg-black/20 flex items-center justify-center">{ICON_MAP[item.icon]}</div>
                       <div className="flex-1"><p className="text-xs text-slate-100 font-bold">{item.menu}</p><p className="text-[9px] text-slate-500">{item.tipo} • {item.hora}</p></div>
-                      <p className="text-xs font-black text-orange-400">{item.cal}k</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-black text-orange-400">{item.cal}k</p>
+                        <button onClick={() => deleteComida(index)} className="p-1 text-rose-500/50 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
